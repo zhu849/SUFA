@@ -23,14 +23,14 @@ NOW_STATUS = None
 
 def change_green():
     NOW_STATUS = 'green'
-    print('Now Status: ' + NOW_STATUS)
+    print('Host Now Status: ' + NOW_STATUS)
     # '1' in binary is 49, this action will sent a b'110001 to ardino
     # ardino will use a type of char to receive this char 
     arduino.write('1'.encode())
     
 def change_red():
     NOW_STATUS = 'red'
-    print('Now Status: ' + NOW_STATUS)
+    print('Host Now Status: ' + NOW_STATUS)
     # '2' in binary is 50, this action will sent a b'110010 to ardino
     # ardino will use a type of char to receive this char 
     arduino.write('2'.encode())
@@ -76,17 +76,30 @@ if __name__ == '__main__':
 
     # control traffic light
     while(True):
+        # read from arduino serial port
+        arduino_msg = arduino.readline()
+        arduino_msg = arduino_msg.decode("utf-8")
+        # others times arduino always return msg = '0'
+        # return msg = '8' mean success, '9' mean failure
+        # define logic is on arduino hardware
+        if(arduino_msg == "8\r\n"):
+            send_to_broker(client, 'success!')
+        elif(arduino_msg == "9\r\n"):
+            send_to_broker(client, 'failure!')
+        
+        keyin = cv2.waitKey(1) & 0xFF
         # turn light to green
-        if (cv2.waitKey(1) & 0xFF) == ord('g'):
+        if (keyin == ord('g')):
             change_green()
             cv2.imshow('Traffic Light',np_green)
         # turn light to red
-        elif (cv2.waitKey(1) & 0xFF) == ord('r'):
+        elif (keyin == ord('r')):
             change_red()
             cv2.imshow('Traffic Light',np_red)
         # exit the exam
-        elif (cv2.waitKey(1) & 0xFF) == ord('q'):
+        elif (keyin == ord('q')):
             arduino.close()
             send_to_broker(client, "end")     
             cv2.destroyAllWindows() 
             break;
+        
