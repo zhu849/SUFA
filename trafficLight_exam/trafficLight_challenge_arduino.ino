@@ -20,14 +20,18 @@ void setup() {
 
 void check_pass(int cm){
   //green light and success across
+  //serial print '8' mean success
   if(traffic_light == 1 && cm < 50){
+    Serial.println('8');
     tone(buzzer, 500);
     delay(500); 
     noTone(buzzer);
     delay(200); 
   }
   //red light but across
+  //serial print '9' mean failure
   else if(traffic_light == 2 && cm < 50){
+    Serial.println('9');
     tone(buzzer, 100);
     delay(1500); 
     noTone(buzzer);
@@ -36,19 +40,20 @@ void check_pass(int cm){
 }
 
 void check_status(char sign){
-  Serial.println(sign);
+  //Serial.println(sign);
   if(sign == '1'){
     traffic_light = 1;
-    Serial.println("Now status is green.");
+    //Serial.println("Now status is green.");
   }
   else if(sign == '2'){
     traffic_light = 2;
-    Serial.println("Now status is red.");
+    //Serial.println("Now status is red.");
   }
 }
 
 void loop()
 {
+  Serial.println('0');
   sign = 0;
   digitalWrite(trigPin, LOW);
   delayMicroseconds(5);
