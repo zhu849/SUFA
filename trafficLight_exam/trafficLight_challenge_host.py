@@ -1,14 +1,25 @@
 import cv2
 import numpy as np
 import serial
+import paho.mqtt.client as mqtt
+import json  
+import time
 
-# color image size
-WIDTH = 1280
+### global variable ###
+# broker setting
+# if ip set 127.0.0.1 then mosquitto should opened on terminal
+BROKER_IP = "127.0.0.1"
+CONNETION_PORT = 1883
+CONNETION_TIME = 180
+TOPIC_NAME = "tf_status"
+# arduino setting
+ARDUINO_SERIAL = 'COM5'
+ARDUINO_PORT = 9600
+# color image size setting
+WIDTH = 1480
 HEIGHT = 1000
 # traffic light status now
 NOW_STATUS = None
-# connection with arduino dev/port
-arduino = serial.Serial('COM5',9600)
 
 def change_green():
     NOW_STATUS = 'green'
@@ -24,13 +35,22 @@ def change_red():
     # ardino will use a type of char to receive this char 
     arduino.write('2'.encode())
     
-# send 'start' or 'end' message notify broker
-def send_to_broker(msg):
-    print('Send '+ msg +' msg to broker.')
-    # send msg to broker
-
+# send message notify broker
+def send_to_broker(client, msg):
+    # set payload
+    payload = {'status' : msg}
+    client.publish(TOPIC_NAME, json.dumps(payload))
+    print ("Send payload to broker: ", json.dumps(payload))
     
 if __name__ == '__main__':
+    # connection with arduino serial 
+    arduino = serial.Serial(ARDUINO_SERIAL, ARDUINO_PORT)
+    
+    # broker connection
+    client = mqtt.Client()
+    # set connection information
+    client.connect(BROKER_IP, CONNETION_PORT, CONNETION_TIME)
+    
     # construct image array with color black, red, green
     np_black = np.zeros(HEIGHT*WIDTH*3).reshape(HEIGHT,WIDTH,3)
     np_red = np.copy(np_black)
@@ -49,7 +69,7 @@ if __name__ == '__main__':
     # waitting for 's' button hitted to start exam, then initial STATUS is green
     while(True):
         if (cv2.waitKey(1) & 0xFF) == ord('s'):
-            send_to_broker("start")
+            send_to_broker(client, "start")
             change_green()
             cv2.imshow('Traffic Light',np_green)
             break;
@@ -67,6 +87,6 @@ if __name__ == '__main__':
         # exit the exam
         elif (cv2.waitKey(1) & 0xFF) == ord('q'):
             arduino.close()
-            send_to_broker("end")     
+            send_to_broker(client, "end")     
             cv2.destroyAllWindows() 
             break;
