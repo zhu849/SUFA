@@ -3,6 +3,7 @@ int buzzer = 8; // buzzer pin
 int trigPin = 12; //ultrasound trig Pin
 int echoPin = 11; //ultrasound echo Pin
 long duration, cm;
+int DETECT_HEIGHT = 150;
 
 // NULL = None, 1 = green, 2 = red 
 int traffic_light;
@@ -21,16 +22,16 @@ void setup() {
 void check_pass(int cm){
   //green light and success across
   //serial print '8' mean success
-  if(traffic_light == 1 && cm < 50){
+  if(traffic_light == 1 && cm < DETECT_HEIGHT){
     Serial.println('8');
     tone(buzzer, 500);
-    delay(500); 
+    delay(1500); 
     noTone(buzzer);
     delay(200); 
   }
   //red light but across
   //serial print '9' mean failure
-  else if(traffic_light == 2 && cm < 50){
+  else if(traffic_light == 2 && cm < DETECT_HEIGHT){
     Serial.println('9');
     tone(buzzer, 100);
     delay(1500); 
