@@ -3,8 +3,7 @@ import cv2
 import numpy as np
 from threading import Thread
 import time
-import os
-import datetime
+import keyboard
 
 class ThreadedCamera(object):
     
@@ -37,7 +36,7 @@ class ThreadedCamera(object):
     '''
     
     def check_frame(self):
-        if(cv2.waitKey(1)&0xFF == ord ('q')):
+        if keyboard.is_pressed('q'):
             self.capture.release ()
         classifyGR(self.frame)
         cv2.waitKey(self.FPS_MS)
@@ -108,7 +107,9 @@ if __name__ == '__main__':
             threaded_camera.check_frame()
         except AttributeError:
             pass
-        if(cv2.waitKey(1)&0xFF == ord ('q')):
-            cv2.destroyAllWindows ()
+        if keyboard.is_pressed('q'):
+            print('land')
+            socket.sendto('land'.encode('utf-8'), tello_address)
+            cv2.destroyAllWindows()
             socket.sendto ('streamoff'.encode (' utf-8 '), tello_address)
             socket.close()
