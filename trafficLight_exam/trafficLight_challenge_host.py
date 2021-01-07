@@ -90,13 +90,11 @@ if __name__ == '__main__':
         keyin = cv2.waitKey(1) & 0xFF
         # turn light to green
         if (keyin == ord('g')):
-            if(NOW_STATUS == 'red'):
-                change_green()
+            change_green()
             cv2.imshow('Traffic Light',np_green)
         # turn light to red
         elif (keyin == ord('r')):
-            if(NOW_STATUS == 'green'):
-                change_red()
+            change_red()
             cv2.imshow('Traffic Light',np_red)
         # exit the exam
         elif (keyin == ord('q')):
