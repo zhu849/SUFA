@@ -74,22 +74,27 @@ def classifyGR(img):
     contours, hierarchy = cv2.findContours(red_mask, 
                                            cv2.RETR_TREE, 
                                            cv2.CHAIN_APPROX_SIMPLE) 
-      
+    
+    areaRed, areaGreen = -1, -1
     for pic, contour in enumerate(contours): 
-        area = cv2.contourArea(contour) 
-        if(area > 300): 
-            print('Red')
-  
+        areaTemp = cv2.contourArea(contour) 
+        if(areaTemp > areaRed):
+            areaRed = areaTemp
     # Creating contour to track green color 
     contours, hierarchy = cv2.findContours(green_mask, 
                                            cv2.RETR_TREE, 
                                            cv2.CHAIN_APPROX_SIMPLE) 
       
     for pic, contour in enumerate(contours): 
-        area = cv2.contourArea(contour) 
-        if(area > 300): 
-            print('Green')
-            socket.sendto('forward 20'.encode('utf-8'), tello_address)
+        areaTemp = cv2.contourArea(contour) 
+        if(areaTemp > areaGreen): 
+            areaGreen = areaTemp
+    
+    if(areaGreen > areaRed):
+        print('Green')
+        socket.sendto('forward 20'.encode('utf-8'), tello_address)
+    else:
+        print('Red')
     
 if __name__ == '__main__':
     # tello set up
