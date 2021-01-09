@@ -2,8 +2,7 @@ import cv2
 import numpy as np
 import serial
 import paho.mqtt.client as mqtt
-import json  
-import time
+import json
 
 ### global variable ###
 # broker setting
@@ -13,7 +12,7 @@ CONNETION_PORT = 1883
 CONNETION_TIME = 180
 TOPIC_NAME = "tf_status"
 # arduino setting
-ARDUINO_SERIAL = 'COM5'
+ARDUINO_SERIAL = '/dev/cu.usbmodem1421'
 ARDUINO_PORT = 9600
 # color image size setting
 WIDTH = 1480
@@ -90,13 +89,11 @@ if __name__ == '__main__':
         keyin = cv2.waitKey(1) & 0xFF
         # turn light to green
         if (keyin == ord('g')):
-            if(NOW_STATUS == 'red'):
-                change_green()
+            change_green()
             cv2.imshow('Traffic Light',np_green)
         # turn light to red
         elif (keyin == ord('r')):
-            if(NOW_STATUS == 'green'):
-                change_red()
+            change_red()
             cv2.imshow('Traffic Light',np_red)
         # exit the exam
         elif (keyin == ord('q')):
