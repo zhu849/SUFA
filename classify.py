@@ -26,69 +26,74 @@ class ThreadedCamera(object):
             if self.capture.isOpened():
                 (self.status, self.frame) = self.capture.read()
             time.sleep(self.FPS)
-    '''
-    def show_frame(self):
-        if(cv2.waitKey(1)&0xFF == ord ('q')):
-            self.capture.release ()
-        cv2.imshow('frame', self.frame)
-        classifyGR(self.frame)
-        cv2.waitKey(self.FPS_MS)
-    '''
-    
+ 
     def check_frame(self):
         if keyboard.is_pressed('q'):
             self.capture.release ()
         classifyGR(self.frame)
         cv2.waitKey(self.FPS_MS)
 
-# color var 
-green = np.uint8([[[0, 255, 0]]])  #green color
-hsvGreen = cv2.cvtColor(green, cv2.COLOR_BGR2HSV) #hsv value of green color 
-red = np.uint8([[[0, 0, 255]]]) #red color
-hsvRed = cv2.cvtColor(red, cv2.COLOR_BGR2HSV) #hsv value of red color
-lowerLimitGreen = hsvGreen[0][0][0] - 10, 100, 100  # range of green color lower limit and upper limit
-upperLimitGreen = hsvGreen[0][0][0] + 10, 255, 255
-lowerLimitRed = hsvRed[0][0][0] - 10, 100, 100 # range of red color lower limit and upper limit
-upperLimitRed = hsvRed[0][0][0] + 10, 255, 255
-#range of green color
-lg = np.array(lowerLimitGreen) 
-ug = np.array(upperLimitGreen)
-#range of red color
-lr = np.array(lowerLimitRed) 
-ur = np.array(upperLimitRed)
+# Set range for red color and  
+# define mask 
+red_lower = np.array([136, 87, 111], np.uint8) 
+red_upper = np.array([180, 255, 255], np.uint8) 
+  
+# Set range for green color and  
+# define mask 
+green_lower = np.array([25, 52, 72], np.uint8) 
+green_upper = np.array([102, 255, 255], np.uint8) 
 
 def classifyGR(img):
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) #convert the image into hsv
-    green_mask = cv2.inRange(hsv, lg, ug) #green masked image
-    #cv2.imshow('green', green_mask) #show the image 
-    red_mask = cv2.inRange(hsv, lr, ur) #red masked image
-    #cv2.imshow('red', red_mask)  #show the image
-    # counter which color more
-    green_counter = 0
-    red_counter = 0
-    for i in range(len(green_mask)):
-        for j in range(len(green_mask[i])):
-            if(green_mask[i][j] == 0):
-                green_counter = green_counter + 1
-    for i in range(len(red_mask)):
-        for j in range(len(red_mask[i])):
-            if(red_mask[i][j] == 0):
-                red_counter = red_counter + 1
+    hsvFrame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) #convert the image into hsv
+    red_mask = cv2.inRange(hsvFrame, red_lower, red_upper) 
+    green_mask = cv2.inRange(hsvFrame, green_lower, green_upper)
+    # Morphological Transform, Dilation 
+    # for each color and bitwise_and operator 
+    # between imageFrame and mask determines 
+    # to detect only that particular color 
+    kernal = np.ones((5, 5), "uint8")
+    # For red color 
+    red_mask = cv2.dilate(red_mask, kernal) 
+    res_red = cv2.bitwise_and(img, img,  
+                              mask = red_mask) 
+      
+    # For green color 
+    green_mask = cv2.dilate(green_mask, kernal) 
+    res_green = cv2.bitwise_and(img, img, 
+                                mask = green_mask) 
     
-    if(green_counter > red_counter):
-        print('forward')
-        socket.sendto('forward 40'.encode('utf-8'), tello_address)
+     # Creating contour to track red color 
+    contours, hierarchy = cv2.findContours(red_mask, 
+                                           cv2.RETR_TREE, 
+                                           cv2.CHAIN_APPROX_SIMPLE) 
     
-    print("g",green_counter)
-    print("r",red_counter)
-
+    areaRed, areaGreen = -1, -1
+    for pic, contour in enumerate(contours): 
+        areaTemp = cv2.contourArea(contour) 
+        if(areaTemp > areaRed):
+            areaRed = areaTemp
+    # Creating contour to track green color 
+    contours, hierarchy = cv2.findContours(green_mask, 
+                                           cv2.RETR_TREE, 
+                                           cv2.CHAIN_APPROX_SIMPLE) 
+      
+    for pic, contour in enumerate(contours): 
+        areaTemp = cv2.contourArea(contour) 
+        if(areaTemp > areaGreen): 
+            areaGreen = areaTemp
+    
+    if(areaGreen > areaRed):
+        print('Green')
+        socket.sendto('forward 20'.encode('utf-8'), tello_address)
+    else:
+        print('Red')
     
 if __name__ == '__main__':
     # tello set up
     tello_ip = '192.168.10.1'
     tello_port = 8889
     tello_address = (tello_ip, tello_port)
-    mypc_address = ('192.168.10.2', 12345)
+    mypc_address = ('192.168.10.3', 12345)
     socket = socket.socket (socket.AF_INET, socket.SOCK_DGRAM)
     socket.bind (mypc_address)
     socket.sendto ('command'.encode (' utf-8 '), tello_address)

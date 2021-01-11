@@ -7,7 +7,7 @@ import json
 ### global variable ###
 # broker setting
 # if ip set 127.0.0.1 then mosquitto should opened on terminal
-BROKER_IP = "127.0.0.1"
+BROKER_IP = "140.116.82.164"
 CONNETION_PORT = 1883
 CONNETION_TIME = 180
 TOPIC_NAME = "tf_status"
