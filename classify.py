@@ -108,7 +108,6 @@ if __name__ == '__main__':
     
     while True:
         try:
-            #threaded_camera.show_frame()
             threaded_camera.check_frame()
         except AttributeError:
             pass
