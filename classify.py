@@ -82,11 +82,15 @@ def classifyGR(img):
         if(areaTemp > areaGreen): 
             areaGreen = areaTemp
     
-    if(areaGreen > areaRed):
+    if(areaGreen > areaRed and areaGreen > 3000):
         print('Green')
         socket.sendto('forward 20'.encode('utf-8'), tello_address)
-    else:
+    elif(areaRed > areaGreen and areaRed > 3000):
         print('Red')
+    '''
+    else:
+        print('None')
+    '''
     
 if __name__ == '__main__':
     # tello set up
